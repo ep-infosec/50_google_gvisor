@@ -1,0 +1,112 @@
+load("//tools:defs.bzl", "arch_genrule", "go_library", "go_test")
+load("//tools/nogo:defs.bzl", "nogo_facts")
+
+# Package linux contains the constants and types needed to interface with a
+# Linux kernel. It should be used instead of syscall or golang.org/x/sys/unix
+# when the host OS may not be Linux.
+
+package(licenses = ["notice"])
+
+nogo_facts(
+    name = "iouring_offsets",
+    srcs = ["iouring.go"],
+    output = "iouring_offsets_impl.go",
+    template = "iouring_offsets.tmpl",
+)
+
+arch_genrule(
+    name = "iouring_offsets_arch",
+    src = ":iouring_offsets",
+    template = "iouring_offsets_%s.go",
+)
+
+go_library(
+    name = "linux",
+    srcs = [
+        "aio.go",
+        "arch_amd64.go",
+        "audit.go",
+        "bpf.go",
+        "capability.go",
+        "clone.go",
+        "context.go",
+        "dev.go",
+        "elf.go",
+        "epoll.go",
+        "epoll_amd64.go",
+        "epoll_arm64.go",
+        "errqueue.go",
+        "eventfd.go",
+        "exec.go",
+        "fadvise.go",
+        "fcntl.go",
+        "file.go",
+        "file_amd64.go",
+        "file_arm64.go",
+        "fs.go",
+        "fuse.go",
+        "futex.go",
+        "inotify.go",
+        "ioctl.go",
+        "ioctl_tun.go",
+        "iouring.go",
+        "ip.go",
+        "ipc.go",
+        "limits.go",
+        "linux.go",
+        "membarrier.go",
+        "mm.go",
+        "mqueue.go",
+        "msgqueue.go",
+        "netdevice.go",
+        "netfilter.go",
+        "netfilter_ipv6.go",
+        "netlink.go",
+        "netlink_route.go",
+        "poll.go",
+        "prctl.go",
+        "ptrace.go",
+        "ptrace_amd64.go",
+        "ptrace_arm64.go",
+        "rseq.go",
+        "rusage.go",
+        "sched.go",
+        "seccomp.go",
+        "sem.go",
+        "sem_amd64.go",
+        "sem_arm64.go",
+        "shm.go",
+        "signal.go",
+        "signalfd.go",
+        "socket.go",
+        "splice.go",
+        "tcp.go",
+        "time.go",
+        "timer.go",
+        "tty.go",
+        "uio.go",
+        "utsname.go",
+        "wait.go",
+        "xattr.go",
+        ":iouring_offsets_arch",
+    ],
+    marshal = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/abi",
+        "//pkg/bits",
+        "//pkg/context",
+        "//pkg/hostarch",
+        "//pkg/marshal",
+        "//pkg/marshal/primitive",
+    ],
+)
+
+go_test(
+    name = "linux_test",
+    size = "small",
+    srcs = [
+        "netfilter_test.go",
+    ],
+    library = ":linux",
+)
